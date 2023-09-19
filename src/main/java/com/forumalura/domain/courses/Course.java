@@ -19,5 +19,5 @@ public class Course {
     @Column(nullable = false, length = 170)
     private String category;
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean activeDate = true;
 }

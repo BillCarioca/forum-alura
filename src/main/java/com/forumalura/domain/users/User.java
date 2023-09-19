@@ -21,7 +21,7 @@ public class User {
     @Column(nullable = false, length = 70)
     private String password;
     @Column(nullable = false, length = 10)
-    private String role;
+    private String roles;
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean activeDate = true;
 }

@@ -5,7 +5,9 @@ spring:
     username: root
     password: 213141
   jpa:
+    show-sql: true
     hibernate:
+      format_sql: true
       dll-auto: update
     properties:
       hibernate:

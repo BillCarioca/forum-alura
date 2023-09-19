@@ -20,7 +20,7 @@ public class Answer {
     private Long id;
     @Column(nullable = false)
     private String message;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne( cascade = CascadeType.ALL)
     @JoinColumn(name = "topic_id")
     private Topic topic;
     private LocalDateTime creationDate = LocalDateTime.now();
@@ -29,5 +29,5 @@ public class Answer {
     private User author;
     private Boolean solution = false;
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean activeDate = true;
 }

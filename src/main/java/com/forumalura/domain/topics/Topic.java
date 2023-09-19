@@ -35,9 +35,9 @@ public class Topic {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "course_id")
     private Course course;
-    @OneToMany(mappedBy = "answers")
+    @OneToMany(mappedBy = "topic")
     @JsonIgnore
     private List<Answer> answers = new ArrayList<>();
     @Column(nullable = false)
-    private boolean active = true;
+    private boolean activeDate = true;
 }
