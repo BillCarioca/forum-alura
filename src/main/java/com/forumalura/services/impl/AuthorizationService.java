@@ -21,6 +21,11 @@ public class AuthorizationService implements UserDetailsService {
         Optional<User> optional =  userRepository.findByEmail(username);
         return optional.orElse(null);
     }
+
     @Transactional
     public User save(User user){return userRepository.save(user);}
+
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
 }
