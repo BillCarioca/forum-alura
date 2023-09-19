@@ -18,3 +18,10 @@ api:
   security:
     token:
       secret: ${JWT_SECRET:my-secret-key}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui-forum.html
+    operationsSorter : method
+serve:
+  error:
+    include-stacktrace: never

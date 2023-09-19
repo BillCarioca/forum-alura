@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String roles;
     @Column(nullable = false)
     private boolean activeDate = true;
-    public User (UserCreateDAO dao){
+    public User (UserCreateDTO dao){
         this.userName = dao.name();
         this.email = dao.email();
         this.UserPassword = dao.password();
