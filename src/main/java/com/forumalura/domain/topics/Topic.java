@@ -42,9 +42,10 @@ public class Topic {
     private boolean activeDate = true;
 
     public Topic (TopicCreateDTO dto,Course course,User author){
-        title = dto.title();
-        message = dto.message();
-
+        this.title = dto.title();
+        this.message = dto.message();
+        this.course = course;
+        this.author = author;
     }
 
     public void updateTopic(TopicUpdateDTO dto,Course course){

@@ -30,4 +30,10 @@ public class Answer {
     private Boolean solution = false;
     @Column(nullable = false)
     private boolean activeDate = true;
+
+    public Answer(AnswerCreateDTO dto,Topic topic,User author){
+        this.message= dto.message();
+        this.topic = topic;
+        this.author = author;
+    }
 }

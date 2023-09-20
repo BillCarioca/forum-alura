@@ -6,5 +6,5 @@ import jakarta.validation.constraints.NotNull;
 public record TopicUpdateDTO(@NotNull Long id,
                              @NotBlank String title,
                              @NotBlank String message,
-                             @NotBlank Long courseId) {
+                             @NotNull Long courseId) {
 }
