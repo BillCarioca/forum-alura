@@ -40,4 +40,16 @@ public class Topic {
     private List<Answer> answers = new ArrayList<>();
     @Column(nullable = false)
     private boolean activeDate = true;
+
+    public Topic (TopicCreateDTO dto,Course course,User author){
+        title = dto.title();
+        message = dto.message();
+
+    }
+
+    public void updateTopic(TopicUpdateDTO dto,Course course){
+        setTitle(dto.title());
+        setMessage(dto.message());
+        setCourse(course);
+    }
 }
