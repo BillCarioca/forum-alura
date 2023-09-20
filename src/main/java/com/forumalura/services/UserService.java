@@ -14,4 +14,5 @@ public interface UserService {
     Page<User> findAllActive(Pageable pageable);
     void delete(Long id);
     User disable(Long id);
+    boolean existById(Long id);
 }

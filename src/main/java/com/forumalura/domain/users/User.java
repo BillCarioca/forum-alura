@@ -30,10 +30,17 @@ public class User implements UserDetails {
     private String roles;
     @Column(nullable = false)
     private boolean activeDate = true;
-    public User (UserCreateDTO dao){
-        this.userName = dao.name();
-        this.email = dao.email();
-        this.UserPassword = dao.password();
+    public User (UserCreateDTO dto){
+        this.userName = dto.name();
+        this.email = dto.email();
+        this.UserPassword = dto.password();
+        this.roles = "ADMIN";
+    }
+    public User (UserUpdateDTO dto){
+        this.userId = dto.id();
+        this.userName = dto.name();
+        this.email = dto.email();
+        this.UserPassword = dto.password();
         this.roles = "ADMIN";
     }
     @Override

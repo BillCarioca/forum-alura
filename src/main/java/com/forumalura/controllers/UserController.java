@@ -2,6 +2,7 @@ package com.forumalura.controllers;
 
 import com.forumalura.domain.users.User;
 import com.forumalura.domain.users.UserCreateDTO;
+import com.forumalura.domain.users.UserUpdateDTO;
 import com.forumalura.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,14 +34,14 @@ public class UserController {
     public ResponseEntity<Object> createUser(@RequestBody @Valid UserCreateDTO requestDTO){
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(new User(requestDTO)));
     }
-    @Operation(summary = "Find all user in Database")
+    @Operation(summary = "Find all users in Database")
     @GetMapping("/all")
     public ResponseEntity<Page<User>> getAllUser(@ParameterObject Pageable pageable){
         return ResponseEntity.ok(userService.findAll(pageable));
     }
-    @Operation(summary = "Find all user in Database")
+    @Operation(summary = "Find all users actives in Database")
     @GetMapping
-    public ResponseEntity<Page<User>> getAllActiveUser(@ParameterObject Pageable pageable){
+    public ResponseEntity<Page<User>> getAllUserActive(@ParameterObject Pageable pageable){
         return ResponseEntity.ok(userService.findAllActive(pageable));
     }
     @Operation(summary = "Find a user in Database by Id")
@@ -52,7 +53,7 @@ public class UserController {
                 ? ResponseEntity.ok(optional.get())
                 :ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
     }
-    @Operation(summary = "Find a product in Database by Email")
+    @Operation(summary = "Find a User in Database by Email")
     @GetMapping("/email/{email}")
     public ResponseEntity<Object> getByLoginUser(@Parameter(description = "Email of user to be Searched")
                                                  @PathVariable(value = "email") String email){
@@ -61,25 +62,31 @@ public class UserController {
                 ? ResponseEntity.ok(optional.get())
                 :ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
     }
-
-    @Operation(summary = "Disable a Product in Database by its Id")
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Object> disableUser (@Parameter(description = "Id of Product to be Disabled")
-                                              @PathVariable(value = "id") Long id){
-        Optional<User> optional = userService.findByUserId(id);
-        if (optional.isPresent()) userService.disable(id);
-        return optional.isPresent()
-                ? ResponseEntity.noContent().eTag("User disabled successfully.").build()
-                :ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+    @Operation(summary = "Update a user in Database")
+    @PutMapping
+    public ResponseEntity<Object> updateUser(@RequestBody @Valid UserUpdateDTO requestDTO){
+        if (userService.existById(requestDTO.id()))
+            return ResponseEntity.ok(userService.save(new User(requestDTO)));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
     }
-    @Operation(summary = "Delete a Product in Database by its Id")
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Object> deleteUser (@Parameter(description = "Id of Product to be Deleted")
+    @Operation(summary = "Disable a User in Database by its Id")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Object> disableUser (@Parameter(description = "Id of User to be Disabled")
                                               @PathVariable(value = "id") Long id){
-        Optional<User> optional = userService.findByUserId(id);
-        if (optional.isPresent()) userService.delete(id);
-        return optional.isPresent()
-                ? ResponseEntity.noContent().eTag("User deleted successfully.").build()
-                :ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+        if (userService.existById(id)){
+            userService.disable(id);
+            ResponseEntity.noContent().eTag("User disabled successfully.").build();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+    }
+    @Operation(summary = "Delete a User in Database by its Id")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Object> deleteUser (@Parameter(description = "Id of User to be Deleted")
+                                              @PathVariable(value = "id") Long id){
+        if (userService.existById(id)){
+            userService.delete(id);
+            ResponseEntity.noContent().eTag("User deleted successfully.").build();
+        }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
     }
 }

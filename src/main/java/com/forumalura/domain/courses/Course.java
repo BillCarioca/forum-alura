@@ -20,4 +20,13 @@ public class Course {
     private String category;
     @Column(nullable = false)
     private boolean activeDate = true;
+    public Course (CourseCreateDTO dto){
+        name= dto.name();
+        category= dto.category();
+    }
+    public Course (CourseUpdateDTO dto){
+        id = dto.id();
+        name= dto.name();
+        category= dto.category();
+    }
 }
