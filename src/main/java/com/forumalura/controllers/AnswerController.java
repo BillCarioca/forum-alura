@@ -53,6 +53,22 @@ public class AnswerController {
         return ResponseEntity.ok(answerService.findAll(pageable));
     }
 
+    @Operation(summary = "Find all answers in Database where the user is the author")
+    @GetMapping("/author")
+    public ResponseEntity<Page<Answer>> getAllAnswerByAuthor(@ParameterObject Pageable pageable){
+        var author = userService.findByEmail(authenticationFacade.getEmail()).get();
+        return ResponseEntity.ok(answerService.findAllByAuthor(author,pageable));
+    }
+
+    @Operation(summary = "Find all answers in Database of a topic")
+    @GetMapping("/topic/{id}")
+    public ResponseEntity<Page<Answer>> getAllAnswerByTopic(@ParameterObject Pageable pageable,
+                                                            @Parameter(description = "Id of Answer to be Searched")
+                                                            @PathVariable(value = "id") Long id){
+        var topic = topicService.findById(id).get();
+        return ResponseEntity.ok(answerService.findAllByTopic(topic,pageable));
+    }
+
     @Operation(summary = "Find all answers actives in Database")
     @GetMapping
     public ResponseEntity<Page<Answer>> getAllAnswerActive(@ParameterObject Pageable pageable){
