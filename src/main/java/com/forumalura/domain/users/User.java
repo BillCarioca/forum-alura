@@ -43,6 +43,14 @@ public class User implements UserDetails {
         this.UserPassword = dto.password();
         this.roles = "ADMIN";
     }
+    public UserDataResponse getDataResponse(){
+        return new UserDataResponse(getUserId(),getUsername(),getEmail(),getUserPassword(),this.activeDate);
+    }
+    public void update(UserUpdateDTO dto){
+        this.userName = dto.name();
+        this.email = dto.email();
+        this.UserPassword = dto.password();
+    }
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return (this.getRoles().compareToIgnoreCase("ADMIN")==0)

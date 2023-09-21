@@ -51,7 +51,7 @@ public class TopicController {
     }
 
     @Operation(summary = "Find all topics in Database where the user is the author")
-    @GetMapping("/all")
+    @GetMapping("/author")
     public ResponseEntity<Page<Topic>> getAllTopicByAuthor(@ParameterObject Pageable pageable){
         var author = userService.findByEmail(authenticationFacade.getEmail()).get();
         return ResponseEntity.ok(topicService.findAllByAuthor(author,pageable));

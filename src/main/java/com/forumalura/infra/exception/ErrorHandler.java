@@ -33,7 +33,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity handlerErrorNotFound(NotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        return ResponseEntity.notFound().eTag(ex.getMessage()).build();
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -53,7 +53,7 @@ public class ErrorHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity handlerError500(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " +ex.getLocalizedMessage());
+        return ResponseEntity.internalServerError().body("Error: " +ex.getLocalizedMessage());
     }
 
     private record DataErrorValidation(String field, String message) {
