@@ -3,6 +3,8 @@ package com.forumalura.controllers;
 import com.forumalura.domain.courses.Course;
 import com.forumalura.domain.courses.CourseCreateDTO;
 import com.forumalura.domain.courses.CourseUpdateDTO;
+import com.forumalura.domain.courses.CourseValidation;
+import com.forumalura.infra.exception.NotFoundException;
 import com.forumalura.services.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -13,9 +15,9 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 
@@ -26,11 +28,16 @@ import java.util.Optional;
 public class CourseController {
     @Autowired
     CourseService courseService;
+    @Autowired
+    CourseValidation validation;
 
     @Operation(summary = "Create a course in Database")
     @PostMapping
-    public ResponseEntity<Object> createCourse(@RequestBody @Valid CourseCreateDTO requestDTO){
-        return ResponseEntity.status(HttpStatus.CREATED).body(courseService.save(new Course(requestDTO)));
+    public ResponseEntity<Object> createCourse(@RequestBody @Valid CourseCreateDTO requestDTO, UriComponentsBuilder uriBuilder){
+        validation.validationCreate(requestDTO);
+        var course = courseService.save(new Course(requestDTO));
+        var uri = uriBuilder.path("/api/courses/{id}").buildAndExpand(course.getId()).toUri();
+        return ResponseEntity.created(uri).body(course.getDataResponse());
     }
 
     @Operation(summary = "Find all courses in Database")
@@ -50,17 +57,32 @@ public class CourseController {
     public ResponseEntity<Object> getByIdCourse(@Parameter(description = "Id of Course to be Searched")
                                               @PathVariable(value = "id") Long id){
         Optional<Course> optional = courseService.findById(id);
-        return optional.isPresent()
-                ? ResponseEntity.ok(optional.get())
-                :ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found.");
+        if (optional.isPresent())
+            return ResponseEntity.ok(optional.get().getDataResponse());
+        throw new NotFoundException("Course not found!");
+    }
+
+    @Operation(summary = "Find a course in Database by Id")
+    @GetMapping("/name/{name}")
+    public ResponseEntity<Object> getByNameCourse(@Parameter(description = "Name of Course to be Searched")
+                                                @PathVariable(value = "name") String name){
+        Optional<Course> optional = courseService.findByName(name);
+        if (optional.isPresent())
+            return ResponseEntity.ok(optional.get().getDataResponse());
+        throw new NotFoundException("Course not found!");
     }
 
     @Operation(summary = "Update a course in Database")
     @PutMapping
     public ResponseEntity<Object> updateCourse(@RequestBody @Valid CourseUpdateDTO requestDTO){
-        if (courseService.existById(requestDTO.id()))
-            return ResponseEntity.ok(courseService.save(new Course(requestDTO)));
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found.");
+        validation.validationUpdate(requestDTO);
+        Optional<Course> optional = courseService.findById(requestDTO.id());
+        if (optional.isPresent()){
+            optional.get().update(requestDTO);
+            var course = courseService.save(optional.get());
+            return ResponseEntity.ok(course.getDataResponse());
+        }
+        throw new NotFoundException("Course not found!");
     }
 
     @Operation(summary = "Disable a course in database by its id")
@@ -71,17 +93,15 @@ public class CourseController {
             courseService.disable(id);
             return ResponseEntity.noContent().eTag("Course disabled successfully.").build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found.");
+        throw new NotFoundException("Course not found!");
     }
 
     @Operation(summary = "Delete a course in database by its id")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Object> deleteCourse(@Parameter(description = "Id of Course to be Deleted")
                                               @PathVariable(value = "id") Long id){
-        if (courseService.existById(id)){
-            courseService.delete(id);
-            return  ResponseEntity.noContent().eTag("Course deleted successfully.").build();
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Course not found.");
+        validation.validationDelete(id);
+        courseService.delete(id);
+        return  ResponseEntity.noContent().eTag("Course deleted successfully.").build();
     }
 }

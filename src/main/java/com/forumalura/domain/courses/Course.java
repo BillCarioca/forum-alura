@@ -21,12 +21,19 @@ public class Course {
     @Column(nullable = false)
     private boolean activeDate = true;
     public Course (CourseCreateDTO dto){
-        name= dto.name();
-        category= dto.category();
+        this.name= dto.name();
+        this.category= dto.category();
     }
     public Course (CourseUpdateDTO dto){
-        id = dto.id();
-        name= dto.name();
-        category= dto.category();
+        this.id = dto.id();
+        this.name= dto.name();
+        this.category= dto.category();
+    }
+    public CourseDataResponse getDataResponse(){
+        return new CourseDataResponse(this.id, this.name,this.category);
+    }
+    public void update(CourseUpdateDTO dto){
+        this.name = dto.name();
+        this.category = dto.category();
     }
 }

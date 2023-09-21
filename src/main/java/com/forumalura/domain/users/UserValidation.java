@@ -27,6 +27,5 @@ public class UserValidation {
             if (optional2.isPresent())
                 throw new ValidationException("User email already registered!");
         }
-
     }
 }

@@ -1,5 +1,6 @@
 package com.forumalura.services;
 
+import com.forumalura.domain.courses.Course;
 import com.forumalura.domain.topics.Topic;
 import com.forumalura.domain.users.User;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ public interface TopicService {
     Page<Topic> findAll(Pageable pageable);
     Page<Topic> findAllActive(Pageable pageable);
     Page<Topic> findAllByAuthor(User author, Pageable pageable);
+    Page<Topic> findAllByCourse(Course course,Pageable pageable);
     void delete(Long id);
     Topic disable(Long id);
     boolean existById(Long id);

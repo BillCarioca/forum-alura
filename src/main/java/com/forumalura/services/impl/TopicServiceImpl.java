@@ -1,5 +1,6 @@
 package com.forumalura.services.impl;
 
+import com.forumalura.domain.courses.Course;
 import com.forumalura.domain.topics.Topic;
 import com.forumalura.domain.users.User;
 import com.forumalura.repositories.TopicRepository;
@@ -40,6 +41,11 @@ public class TopicServiceImpl implements TopicService {
     @Override
     public Page<Topic> findAllByAuthor(User author, Pageable pageable) {
         return topicRepository.findAllByAuthor(author,pageable);
+    }
+
+    @Override
+    public Page<Topic> findAllByCourse(Course course,Pageable pageable){
+        return topicRepository.findAllByCourse(course,pageable);
     }
 
     @Transactional

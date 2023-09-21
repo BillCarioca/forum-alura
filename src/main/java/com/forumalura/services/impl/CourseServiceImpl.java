@@ -28,6 +28,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    public Optional<Course> findByName(String name){ return courseRepository.findByName(name); }
+
+    @Override
     public Page<Course> findAll(Pageable pageable) {
         return courseRepository.findAll(pageable);
     }
