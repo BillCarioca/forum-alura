@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface AnswerService {
     Answer save(Answer answer);
     Optional<Answer> findById(Long id);
+    Optional<Answer> findByMessageAndTopic(String message,Topic topic);
     Page<Answer> findAll(Pageable pageable);
     Page<Answer> findAllByActiveDateTrue(Pageable pageable);
     Page<Answer> findAllByAuthor(User author, Pageable pageable);

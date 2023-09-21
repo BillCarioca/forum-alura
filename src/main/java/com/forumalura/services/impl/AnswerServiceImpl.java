@@ -26,6 +26,11 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
+    public Optional<Answer> findByMessageAndTopic(String message,Topic topic){
+        return answerRepository.findByMessageAndTopic(message, topic);
+    }
+
+    @Override
     public Page<Answer> findAll(Pageable pageable) {
         return answerRepository.findAll(pageable);
     }

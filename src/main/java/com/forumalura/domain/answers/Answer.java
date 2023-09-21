@@ -31,9 +31,13 @@ public class Answer {
     @Column(nullable = false)
     private boolean activeDate = true;
 
-    public Answer(AnswerCreateDTO dto,Topic topic,User author){
-        this.message= dto.message();
+    public Answer(String message,Topic topic,User author){
+        this.message= message;
         this.topic = topic;
         this.author = author;
+    }
+    public AnswerDataResponse getDataResponse(){
+        return new AnswerDataResponse(this.id,this.message,this.topic.getId(),
+                                        this.creationDate,this.author.getUserId(),this.solution);
     }
 }

@@ -3,13 +3,11 @@ package com.forumalura.controllers;
 import com.forumalura.domain.answers.Answer;
 import com.forumalura.domain.answers.AnswerCreateDTO;
 import com.forumalura.domain.answers.AnswerUpdateDTO;
+import com.forumalura.domain.answers.AnswerValidation;
 import com.forumalura.domain.topics.Topic;
-import com.forumalura.domain.topics.TopicCreateDTO;
-import com.forumalura.domain.topics.TopicUpdateDTO;
+import com.forumalura.infra.exception.NotFoundException;
 import com.forumalura.services.AnswerService;
-import com.forumalura.services.AuthenticationFacade;
 import com.forumalura.services.TopicService;
-import com.forumalura.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -19,9 +17,9 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 
@@ -33,18 +31,17 @@ public class AnswerController {
     @Autowired
     AnswerService answerService;
     @Autowired
-    AuthenticationFacade authenticationFacade;
-    @Autowired
     TopicService topicService;
     @Autowired
-    UserService userService;
+    AnswerValidation validation;
 
     @Operation(summary = "Create a answers in Database")
     @PostMapping
-    public ResponseEntity<Object> createAnswer(@RequestBody @Valid AnswerCreateDTO requestDTO){
-        var author = userService.findByEmail(authenticationFacade.getEmail()).get();
-        var topic = topicService.findById(requestDTO.topicId()).get();
-        return ResponseEntity.status(HttpStatus.CREATED).body(answerService.save(new Answer(requestDTO,topic,author)));
+    public ResponseEntity<Object> createAnswer(@RequestBody @Valid AnswerCreateDTO requestDTO, UriComponentsBuilder uriBuilder){
+        var answerRequest = validation.validationCreate(requestDTO);
+        var answer = answerService.save(answerRequest);
+        var uri = uriBuilder.path("/api/answers/{id}").buildAndExpand(answer.getId()).toUri();
+        return ResponseEntity.created(uri).body(answer.getDataResponse());
     }
 
     @Operation(summary = "Find all answers in Database")
@@ -56,7 +53,7 @@ public class AnswerController {
     @Operation(summary = "Find all answers in Database where the user is the author")
     @GetMapping("/author")
     public ResponseEntity<Page<Answer>> getAllAnswerByAuthor(@ParameterObject Pageable pageable){
-        var author = userService.findByEmail(authenticationFacade.getEmail()).get();
+        var author = validation.getAuthor();
         return ResponseEntity.ok(answerService.findAllByAuthor(author,pageable));
     }
 
@@ -65,8 +62,10 @@ public class AnswerController {
     public ResponseEntity<Page<Answer>> getAllAnswerByTopic(@ParameterObject Pageable pageable,
                                                             @Parameter(description = "Id of Answer to be Searched")
                                                             @PathVariable(value = "id") Long id){
-        var topic = topicService.findById(id).get();
-        return ResponseEntity.ok(answerService.findAllByTopic(topic,pageable));
+        Optional<Topic> topic = topicService.findById(id);
+        if (topic.isPresent())
+            return ResponseEntity.ok(answerService.findAllByTopic(topic.get(),pageable));
+        throw new NotFoundException("Topic not found!");
     }
 
     @Operation(summary = "Find all answers actives in Database")
@@ -80,20 +79,17 @@ public class AnswerController {
     public ResponseEntity<Object> getByIdAnswer(@Parameter(description = "Id of Answer to be Searched")
                                                @PathVariable(value = "id") Long id){
         Optional<Answer> optional = answerService.findById(id);
-        return optional.isPresent()
-                ? ResponseEntity.ok(optional.get())
-                :ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found.");
+        if (optional.isPresent())
+            return ResponseEntity.ok(optional.get().getDataResponse());
+        throw new NotFoundException("Answer not found!");
     }
 
     @Operation(summary = "Update a answers in Database")
     @PutMapping
     public ResponseEntity<Object> updateAnswer(@RequestBody @Valid AnswerUpdateDTO requestDTO){
-        if (answerService.existById(requestDTO.id())){
-            var answer = answerService.findById(requestDTO.id()).get();
-            answer.setMessage(requestDTO.message());
-            return ResponseEntity.ok(answerService.save(answer));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found.");
+        var answerRequest = validation.validationUpdate(requestDTO);
+        var answer = answerService.save(answerRequest);
+        return ResponseEntity.ok(answer.getDataResponse());
     }
 
     @Operation(summary = "Disable a answers in database by its id")
@@ -104,7 +100,7 @@ public class AnswerController {
             answerService.disable(id);
             return ResponseEntity.noContent().eTag("Answer disabled successfully.").build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found.");
+        throw new NotFoundException("Answer not found!");
     }
 
     @Operation(summary = "Delete a answers in database by its id")
@@ -115,6 +111,6 @@ public class AnswerController {
             answerService.delete(id);
             return  ResponseEntity.noContent().eTag("Answer deleted successfully.").build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Answer not found.");
+        throw new NotFoundException("Answer not found!");
     }
 }
