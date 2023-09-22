@@ -1,6 +1,7 @@
 package com.forumalura.domain.answers;
 
 import com.forumalura.domain.topics.Topic;
+import com.forumalura.domain.topics.TopicStatus;
 import com.forumalura.domain.users.User;
 import com.forumalura.infra.exception.NotFoundException;
 import com.forumalura.infra.exception.ValidationException;
@@ -26,6 +27,8 @@ public class AnswerValidation {
     public Answer validationCreate(AnswerCreateDTO dto){
         Optional<Topic> topicOptional = topicService.findById(dto.topicId());
         if (topicOptional.isEmpty()) throw new NotFoundException("Topic not found!");
+        if (topicOptional.get().getStatus()== TopicStatus.FECHADO)
+            throw new ValidationException("This Topic is Closed!");
         Optional<Answer> optional = answerService.findByMessageAndTopic(dto.message(),topicOptional.get());
         if (optional.isPresent())
             throw new ValidationException("Answer already registered in this Topic!");
@@ -34,6 +37,8 @@ public class AnswerValidation {
     public Answer validationUpdate(AnswerUpdateDTO dto){
         Optional<Answer> answerOptional = answerService.findById(dto.id());
         if (answerOptional.isEmpty()) throw new NotFoundException("Answer not found!");
+        if (answerOptional.get().getTopic().getStatus()== TopicStatus.FECHADO)
+            throw new ValidationException("This Topic is Closed!");
         if (!dto.message().equalsIgnoreCase(answerOptional.get().getMessage())){
             Optional<Answer> optional = answerService.findByMessageAndTopic(dto.message(),answerOptional.get().getTopic());
             if (optional.isPresent())

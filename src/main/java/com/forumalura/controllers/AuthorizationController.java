@@ -22,7 +22,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/auth")
 @SecurityRequirement(name = "Forum")
-@Tag(name = "Authentication")
+@Tag(name = "Authentication", description = "User creation and authentication")
 public class AuthorizationController {
     final AuthenticationManager authenticationManager;
     final AuthorizationService authorizationService;

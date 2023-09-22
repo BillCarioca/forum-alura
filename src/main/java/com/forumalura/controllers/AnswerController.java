@@ -5,6 +5,7 @@ import com.forumalura.domain.answers.AnswerCreateDTO;
 import com.forumalura.domain.answers.AnswerUpdateDTO;
 import com.forumalura.domain.answers.AnswerValidation;
 import com.forumalura.domain.topics.Topic;
+import com.forumalura.domain.topics.TopicStatus;
 import com.forumalura.infra.exception.NotFoundException;
 import com.forumalura.services.AnswerService;
 import com.forumalura.services.TopicService;
@@ -26,7 +27,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/answers")
 @SecurityRequirement(name = "Forum")
-@Tag(name = "Answers")
+@Tag(name = "Answers", description = "Make a complete CRUD of the Answers")
 public class AnswerController {
     @Autowired
     AnswerService answerService;
@@ -40,6 +41,10 @@ public class AnswerController {
     public ResponseEntity<Object> createAnswer(@RequestBody @Valid AnswerCreateDTO requestDTO, UriComponentsBuilder uriBuilder){
         var answerRequest = validation.validationCreate(requestDTO);
         var answer = answerService.save(answerRequest);
+        if (answer.getTopic().getStatus()==TopicStatus.NAO_RESPONDIDO){
+            answer.getTopic().setStatus(TopicStatus.NAO_SOLUCIONADO);
+            topicService.save(answer.getTopic());
+        }
         var uri = uriBuilder.path("/api/answers/{id}").buildAndExpand(answer.getId()).toUri();
         return ResponseEntity.created(uri).body(answer.getDataResponse());
     }

@@ -53,4 +53,8 @@ public class Topic {
         setMessage(dto.message());
         setCourse(course);
     }
+    public TopicDataResponse getDataResponse(){
+        return new TopicDataResponse(this.id,this.title,this.message,this.creationDate,
+                                    this.status,this.author.getUserId(),this.course.getId());
+    }
 }

@@ -24,7 +24,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/courses")
 @SecurityRequirement(name = "Forum")
-@Tag(name = "Courses")
+@Tag(name = "Courses", description = "Make a complete CRUD of the Courses")
 public class CourseController {
     @Autowired
     CourseService courseService;

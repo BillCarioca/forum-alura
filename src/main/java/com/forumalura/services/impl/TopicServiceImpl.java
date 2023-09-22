@@ -11,6 +11,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Optional;
 @Service
 public class TopicServiceImpl implements TopicService {
@@ -29,6 +31,11 @@ public class TopicServiceImpl implements TopicService {
     }
 
     @Override
+    public Optional<Topic> findByTitleAndMessage(String title,String message){
+        return topicRepository.findByTitleAndMessage(title, message);
+    }
+
+    @Override
     public Page<Topic> findAll(Pageable pageable) {
         return topicRepository.findAll(pageable);
     }
@@ -40,12 +47,19 @@ public class TopicServiceImpl implements TopicService {
 
     @Override
     public Page<Topic> findAllByAuthor(User author, Pageable pageable) {
-        return topicRepository.findAllByAuthor(author,pageable);
+        return topicRepository.findAllByActiveDateTrueAndAuthor(author,pageable);
     }
 
     @Override
     public Page<Topic> findAllByCourse(Course course,Pageable pageable){
-        return topicRepository.findAllByCourse(course,pageable);
+        return topicRepository.findAllByActiveDateTrueAndCourse(course,pageable);
+    }
+
+    @Override
+    public Page<Topic> findAllByCreationDateYear(Integer year,Pageable pageable){
+        LocalDateTime dateStart = LocalDateTime.of(year, Month.JANUARY, 1, 0, 0);
+        LocalDateTime dateEnd = LocalDateTime.of(year, Month.DECEMBER, 31, 23,59);
+        return topicRepository.findAllByActiveDateTrueAndCreationDateBetween(dateStart,dateEnd,pageable);
     }
 
     @Transactional

@@ -24,7 +24,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/users")
 @SecurityRequirement(name = "Forum")
-@Tag(name = "Users", description = "Makes the Complete User CRUD")
+@Tag(name = "Users", description = "Make a complete CRUD of the Users")
 public class UserController {
     @Autowired
     UserService userService;

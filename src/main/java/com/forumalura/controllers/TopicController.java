@@ -1,12 +1,8 @@
 package com.forumalura.controllers;
 
-import com.forumalura.domain.topics.Topic;
-import com.forumalura.domain.topics.TopicCreateDTO;
-import com.forumalura.domain.topics.TopicUpdateDTO;
-import com.forumalura.services.AuthenticationFacade;
-import com.forumalura.services.CourseService;
+import com.forumalura.domain.topics.*;
+import com.forumalura.infra.exception.NotFoundException;
 import com.forumalura.services.TopicService;
-import com.forumalura.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -16,32 +12,29 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/topics")
 @SecurityRequirement(name = "Forum")
-@Tag(name = "Topics")
+@Tag(name = "Topics", description = "Make a complete CRUD of the Topics")
 public class TopicController {
     @Autowired
     TopicService topicService;
     @Autowired
-    UserService userService;
-    @Autowired
-    CourseService courseService;
-    @Autowired
-    AuthenticationFacade authenticationFacade;
+    TopicValidation validation;
 
     @Operation(summary = "Create a topics in Database")
     @PostMapping
-    public ResponseEntity<Object> createTopic(@RequestBody @Valid TopicCreateDTO requestDTO){
-        var course = courseService.findById(requestDTO.courseId()).get();
-        var author = userService.findByEmail(authenticationFacade.getEmail()).get();
-        return ResponseEntity.status(HttpStatus.CREATED).body(topicService.save(new Topic(requestDTO,course,author)));
+    public ResponseEntity<Object> createTopic(@RequestBody @Valid TopicCreateDTO requestDTO, UriComponentsBuilder uriBuilder){
+        var topicRequest = validation.validationCreate(requestDTO);
+        var topic = topicService.save(topicRequest);
+        var uri = uriBuilder.path("/api/topics/{id}").buildAndExpand(topic.getId()).toUri();
+        return ResponseEntity.created(uri).body(topic.getDataResponse());
     }
 
     @Operation(summary = "Find all topics in Database")
@@ -53,7 +46,7 @@ public class TopicController {
     @Operation(summary = "Find all topics in Database where the user is the author")
     @GetMapping("/author")
     public ResponseEntity<Page<Topic>> getAllTopicByAuthor(@ParameterObject Pageable pageable){
-        var author = userService.findByEmail(authenticationFacade.getEmail()).get();
+        var author = validation.getAuthor();
         return ResponseEntity.ok(topicService.findAllByAuthor(author,pageable));
     }
 
@@ -68,21 +61,25 @@ public class TopicController {
     public ResponseEntity<Object> getByIdTopic(@Parameter(description = "Id of Topic to be Searched")
                                                 @PathVariable(value = "id") Long id){
         Optional<Topic> optional = topicService.findById(id);
-        return optional.isPresent()
-                ? ResponseEntity.ok(optional.get())
-                :ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topic not found.");
+        if (optional.isPresent())
+            return ResponseEntity.ok(optional.get());
+        throw new NotFoundException("Topic not found!");
     }
 
     @Operation(summary = "Update a topics in Database")
     @PutMapping
     public ResponseEntity<Object> updateTopic(@RequestBody @Valid TopicUpdateDTO requestDTO){
-        if (topicService.existById(requestDTO.id())){
-            var topic = topicService.findById(requestDTO.id()).get();
-            var course = courseService.findById(requestDTO.courseId()).get();
-            topic.updateTopic(requestDTO,course);
-            return ResponseEntity.ok(topicService.save(topic));
-        }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topic not found.");
+        var topicRequest = validation.validationUpdate(requestDTO);
+        var topic = topicService.save(topicRequest);
+        return ResponseEntity.ok(topic.getDataResponse());
+    }
+
+    @Operation(summary = "Update a topics status in Database")
+    @PutMapping("/status")
+    public ResponseEntity<Object> updateStatusTopic(@RequestBody @Valid TopicUpdateStatusDTO requestDTO){
+        var topicRequest = validation.validationUpdateStatus(requestDTO);
+        var topic = topicService.save(topicRequest);
+        return ResponseEntity.ok(topic.getDataResponse());
     }
 
     @Operation(summary = "Disable a topics in database by its id")
@@ -93,7 +90,7 @@ public class TopicController {
             topicService.disable(id);
             return ResponseEntity.noContent().eTag("Topic disabled successfully.").build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topic not found.");
+        throw new NotFoundException("Topic not found!");
     }
 
     @Operation(summary = "Delete a topics in database by its id")
@@ -104,6 +101,6 @@ public class TopicController {
             topicService.delete(id);
             return  ResponseEntity.noContent().eTag("Topic deleted successfully.").build();
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Topic not found.");
+        throw new NotFoundException("Topic not found!");
     }
 }
